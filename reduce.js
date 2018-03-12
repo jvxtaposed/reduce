@@ -1,49 +1,21 @@
-var input = '';
+#!/usr/bin/env node
 
-process.stdin.resume();
-process.stdin.setEncoding('utf8');
+/*read in the stream as a string and parse to JSON*/
 
-process.stdin.on('data', function (chunk) {
-    input += chunk;
-});
+var fs = require('fs');
+var stdinBuffer = fs.readFileSync(0); // STDIN_FILENO = 0
+//console.log(stdinBuffer.toString());
 
-
-var parsedData = JSON.parse(input);
-for(var myObj in parsedData){
-	var myJSONObject = {parsedData[myObj]};
-}
+var jen = JSON.parse(stdinBuffer);
 
 
-const jen = {
-  "node1": {
-      "application": "forge",
-      "version": "10.0",
-      "role": "app-server"
-    },
-  "node2": {
-    "application": "forge",
-    "version": "10.0",
-    "role": "util",
-    "location": "slice"
-  },
-  "node3": {
-    "application": "forge",
-    "version": "9.5",
-    "role": "db"
-  },
-  "node4": {
-    "application": "forge",
-    "location": "slice",
-    "role": "worker"
-  }
-};
-
+//for each item in the entries array (which is [key, val] in the original), 
+//we're adding a new key val.field to the accumulator, with the value key
 const app = Object.entries(jen).reduce((acc, [key, {application}]) => {
-  acc[application] = acc[application] || {"application": []}; 
-  acc["application"][application].push(key);
+  acc[application] = acc[application] || []; 
+  acc[application].push(key);
   return acc;
 }, {});
-
 
 
 const ver = Object.entries(jen).reduce((acc, [key, {version}]) => {
@@ -70,30 +42,31 @@ const loc = Object.entries(jen).reduce((acc, [key, {location}]) => {
   return acc;
 }, {});
 
-//const app = Object.
 
-console.log(app);
-console.log(ver);
-console.log(role);
-console.log(loc);
+//wrap around everything
+var obj = {
+  //app array to hold the arrays
+  application: [],
+  //version array to hold the version arrays
+   version: [],
+   //etc
+   role: [],
+   //etc
+   location: []
+};
+
+//push the reduced arrays into the specified objects/arrays
+obj.application.push(app);
+obj.version.push(ver);
+obj.role.push(role);
+obj.location.push(loc);
+var outputFile = JSON.stringify(obj, null, ' ');
 
 /*
-const acc = {}
-
-Object.entries(jen).forEach(([key, value]) => {
-  acc[value.application] = key;
-}, {});
-
-console.log(acc);
+to prind to console
+console.log(a);
 */
 
-
-
-/*output json
-
-process.stdin.on('end', function () {
-    var parsedData = JSON.parse(input);
-    var outputJSON = JSON.stringify(parsedData, null, '    ');
-    process.stdout.write(outputJSON);
-});
-*/
+//writing to disk as myoutput.json
+var writing = require('fs');
+writing.writeFile('myoutput.json', outputFile, 'utf8');
