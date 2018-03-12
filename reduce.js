@@ -70,3 +70,4 @@ console.log(a);
 //writing to disk as myoutput.json
 var writing = require('fs');
 writing.writeFile('myoutput.json', outputFile, 'utf8');
+
